@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The War is Won — A Victory Counter</title>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,700;0,6..96,900;1,6..96,400&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #14110f;
+    --cream: #f2ead5;
+    --blood: #8b1a1a;
+    --blood-bright: #b22222;
+    --faded: #6b5d48;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { background: var(--cream); color: var(--ink); }
+  body {
+    font-family: 'Fraunces', Georgia, serif;
+    font-feature-settings: 'ss01', 'onum';
+    line-height: 1.5;
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(139,26,26,0.04) 0, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(20,17,15,0.04) 0, transparent 50%);
+  }
+  .paper { max-width: 1100px; margin: 0 auto; padding: 48px 56px 80px; }
+  .masthead {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 14px 0 10px; border-bottom: 3px double var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em;
+  }
+  .masthead .vol { color: var(--faded); }
+  .masthead .edition { font-weight: 700; }
+  h1.title {
+    font-family: 'Bodoni Moda', serif; font-weight: 900;
+    font-size: clamp(56px, 10vw, 140px); line-height: 0.85;
+    letter-spacing: -0.03em; text-align: center; margin: 48px 0 8px; font-style: italic;
+  }
+  h1.title .is { font-style: normal; font-weight: 400; font-size: 0.55em; vertical-align: 0.2em; padding: 0 0.15em; }
+  .dek {
+    text-align: center; font-family: 'Fraunces', serif; font-style: italic;
+    font-size: 20px; color: var(--faded); max-width: 680px;
+    margin: 0 auto 48px; line-height: 1.4;
+  }
+  .counter-block {
+    text-align: center; margin: 56px 0 72px;
+    border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink);
+    padding: 40px 0 44px; position: relative;
+  }
+  .counter-block::before { content: ''; position: absolute; top: 4px; left: 0; right: 0; border-top: 1px solid var(--ink); }
+  .counter-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.25em; color: var(--faded); margin-bottom: 14px;
+  }
+  .counter-number {
+    font-family: 'Bodoni Moda', serif; font-weight: 900; font-size: 220px;
+    line-height: 0.8; color: var(--blood); letter-spacing: -0.04em;
+    font-feature-settings: 'lnum'; text-shadow: 2px 2px 0 rgba(20,17,15,0.08);
+  }
+  .counter-sub { font-family: 'Fraunces', serif; font-size: 22px; font-style: italic; margin-top: 14px; }
+  .callout-row {
+    display: flex; justify-content: center; gap: 56px; flex-wrap: wrap;
+    margin-top: 24px; padding-top: 20px; border-top: 1px dashed var(--faded);
+  }
+  .callout { text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--faded); }
+  .callout .big { display: block; font-family: 'Bodoni Moda', serif; font-weight: 900; font-size: 48px; color: var(--ink); line-height: 1; margin-bottom: 2px; }
+  .section-head {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.3em; color: var(--faded); text-align: center; margin: 64px 0 8px;
+  }
+  .section-head::before, .section-head::after {
+    content: ''; display: inline-block; width: 60px; height: 1px;
+    background: var(--faded); vertical-align: middle; margin: 0 16px;
+  }
+  .section-title { font-family: 'Bodoni Moda', serif; font-size: 42px; font-weight: 700; font-style: italic; text-align: center; margin-bottom: 36px; }
+  .legend {
+    display: flex; justify-content: center; gap: 28px; flex-wrap: wrap;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.1em; color: var(--faded); margin-bottom: 20px;
+  }
+  .legend-item { display: flex; align-items: center; gap: 8px; }
+  .legend-swatch { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--cream); box-shadow: 0 0 0 1px var(--ink); }
+  .chart-wrap { background: var(--cream); border: 1px solid var(--ink); padding: 32px 28px 24px; box-shadow: 4px 4px 0 var(--ink); }
+  .chart-caption {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.15em; color: var(--faded);
+    display: flex; justify-content: space-between; margin-bottom: 18px;
+  }
+  svg.chart { width: 100%; height: auto; display: block; }
+  .grid-line { stroke: var(--ink); stroke-opacity: 0.12; stroke-width: 1; }
+  .axis-line { stroke: var(--ink); stroke-width: 1.5; }
+  .axis-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; fill: var(--faded); text-transform: uppercase; letter-spacing: 0.1em; }
+  .price-line { fill: none; stroke: var(--ink); stroke-width: 2; }
+  .price-fill { fill: var(--ink); fill-opacity: 0.04; }
+  .decl-point { stroke: var(--cream); stroke-width: 3; cursor: pointer; }
+  .decl-point.truth { fill: var(--blood); }
+  .decl-point.rally { fill: #c26a1e; }
+  .decl-point.presser { fill: #2d4a3a; }
+  .decl-point.interview { fill: #3b2d5a; }
+  .decl-point:hover { filter: brightness(1.2); }
+  .decl-number { font-family: 'Bodoni Moda', serif; font-weight: 900; font-size: 13px; fill: var(--cream); pointer-events: none; text-anchor: middle; dominant-baseline: central; }
+  .timeline { margin-top: 56px; }
+  .entry { display: grid; grid-template-columns: 80px 1fr auto; gap: 24px; padding: 28px 0; border-top: 1px solid var(--ink); align-items: baseline; }
+  .entry:last-child { border-bottom: 1px solid var(--ink); }
+  .entry-num { font-family: 'Bodoni Moda', serif; font-weight: 900; font-size: 56px; color: var(--blood); line-height: 0.8; font-style: italic; }
+  .entry-date { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.2em; color: var(--faded); margin-bottom: 8px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .badge { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; padding: 3px 8px; border: 1px solid currentColor; border-radius: 2px; }
+  .badge.truth { color: var(--blood); background: rgba(139,26,26,0.06); }
+  .badge.rally { color: #c26a1e; background: rgba(194,106,30,0.08); }
+  .badge.presser { color: #2d4a3a; background: rgba(45,74,58,0.08); }
+  .badge.interview { color: #3b2d5a; background: rgba(59,45,90,0.08); }
+  .entry-quote { font-family: 'Fraunces', serif; font-size: 22px; font-style: italic; line-height: 1.35; color: var(--ink); margin-bottom: 10px; }
+  .entry-quote::before { content: '\201C'; color: var(--blood); font-size: 1.2em; }
+  .entry-quote::after { content: '\201D'; color: var(--blood); font-size: 1.2em; }
+  .entry-meta { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--faded); }
+  .entry-meta a { color: var(--blood); text-decoration: none; border-bottom: 1px solid var(--blood); }
+  .entry-meta a:hover { background: var(--blood); color: var(--cream); }
+  .entry-price { font-family: 'Bodoni Moda', serif; text-align: right; min-width: 140px; }
+  .entry-price .num { font-size: 28px; font-weight: 700; display: block; color: var(--ink); }
+  .entry-price .lbl { font-family: 'JetBrains Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--faded); }
+  .colophon {
+    margin-top: 80px; padding-top: 24px; border-top: 3px double var(--ink);
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.15em; color: var(--faded);
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+  }
+  .colophon p { max-width: 700px; line-height: 1.6; }
+  #tooltip {
+    position: fixed; background: var(--ink); color: var(--cream);
+    padding: 14px 18px; border: 1px solid var(--blood);
+    font-family: 'Fraunces', serif; font-size: 14px; max-width: 340px;
+    pointer-events: none; opacity: 0; transition: opacity 0.15s;
+    z-index: 100; box-shadow: 4px 4px 0 var(--blood);
+  }
+  #tooltip .tt-date { font-family: 'JetBrains Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--blood-bright); margin-bottom: 6px; }
+  #tooltip .tt-quote { font-style: italic; line-height: 1.4; }
+  #tooltip .tt-price { font-family: 'JetBrains Mono', monospace; font-size: 10px; margin-top: 8px; color: var(--cream); opacity: 0.7; }
+  @media (max-width: 720px) {
+    .paper { padding: 24px 20px 56px; }
+    .counter-number { font-size: 140px; }
+    .entry { grid-template-columns: 52px 1fr; }
+    .entry-price { grid-column: 2; text-align: left; }
+    .entry-num { font-size: 40px; }
+    .entry-quote { font-size: 18px; }
+    .callout-row { gap: 32px; }
+    .callout .big { font-size: 36px; }
+  }
+</style>
+</head>
+<body>
+<main class="paper">
+  <div class="masthead">
+    <span class="vol">Vol. I &middot; No. 1</span>
+    <span class="edition">A Ledger of Declared Victories</span>
+    <span class="vol">Updated April 18, 2026</span>
+  </div>
+  <h1 class="title">The War<span class="is">is</span>Won</h1>
+  <p class="dek">A running tally of every time President Trump has personally declared victory in the war with Iran &mdash; from Truth Social, rallies, press conferences, and interviews &mdash; plotted against what Americans are paying for a gallon of gas.</p>
+  <div class="counter-block">
+    <div class="counter-label">Times the War Has Been Won</div>
+    <div class="counter-number">9</div>
+    <div class="counter-sub">&hellip;and counting.</div>
+    <div class="callout-row">
+      <div class="callout"><span class="big">$4.05</span>Gas / gallon today</div>
+      <div class="callout"><span class="big">$2.83</span>Gas / gallon before the war</div>
+      <div class="callout"><span class="big">+43%</span>Increase at the pump</div>
+    </div>
+  </div>
+  <div class="section-head">Exhibit A</div>
+  <h2 class="section-title">Tired of Winning?</h2>
+  <div class="legend">
+    <div class="legend-item"><span class="legend-swatch" style="background:#8b1a1a"></span>Truth Social</div>
+    <div class="legend-item"><span class="legend-swatch" style="background:#c26a1e"></span>Rally</div>
+    <div class="legend-item"><span class="legend-swatch" style="background:#2d4a3a"></span>Press Conference</div>
+    <div class="legend-item"><span class="legend-swatch" style="background:#3b2d5a"></span>Interview</div>
+  </div>
+  <div class="chart-wrap">
+    <div class="chart-caption">
+      <span>U.S. National Average, Regular Unleaded &mdash; USD / gallon</span>
+      <span>Source: AAA &middot; Feb 28 &rarr; Apr 18, 2026</span>
+    </div>
+    <svg class="chart" viewBox="0 0 1000 460" preserveAspectRatio="xMidYMid meet" id="chart"></svg>
+  </div>
+  <div class="section-head">The Record</div>
+  <h2 class="section-title">Every Time the War Ended</h2>
+  <div class="timeline" id="timeline"></div>
+  <div class="colophon">
+    <p>Every quotation is drawn from primary sources &mdash; Truth Social posts, rally recordings, White House press conferences, and on-record interviews &mdash; as reported by CNN, CBS News, NPR, PBS, Axios, CNBC, and PolitiFact. Gasoline prices are U.S. national averages for regular unleaded from AAA. Pre-war baseline ($2.83) is the AAA national average on January 1, 2026.</p>
+    <p>Heavily inspired by <a href="https://bitcoindeaths.com/" target="_blank" rel="noopener">bitcoindeaths.com</a></p>
+  </div>
+</main>
+<div id="tooltip"></div>
+<script>
+const prices = [
+  {d:"2026-02-28",p:3.00},{d:"2026-03-02",p:3.04},{d:"2026-03-05",p:3.20},
+  {d:"2026-03-07",p:3.28},{d:"2026-03-09",p:3.35},{d:"2026-03-11",p:3.42},
+  {d:"2026-03-13",p:3.50},{d:"2026-03-16",p:3.60},{d:"2026-03-18",p:3.68},
+  {d:"2026-03-20",p:3.75},{d:"2026-03-23",p:3.82},{d:"2026-03-24",p:3.85},
+  {d:"2026-03-26",p:3.92},{d:"2026-03-28",p:3.96},{d:"2026-03-30",p:3.99},
+  {d:"2026-04-01",p:4.06},{d:"2026-04-02",p:4.08},{d:"2026-04-03",p:4.09},
+  {d:"2026-04-06",p:4.12},{d:"2026-04-07",p:4.14},{d:"2026-04-08",p:4.14},
+  {d:"2026-04-09",p:4.16},{d:"2026-04-10",p:4.14},{d:"2026-04-12",p:4.10},
+  {d:"2026-04-14",p:4.08},{d:"2026-04-16",p:4.05},{d:"2026-04-18",p:4.05},
+];
+const declarations = [
+  {n:1,date:"2026-03-02",dateLabel:"March 2",type:"presser",typeLabel:"Press Conference",
+   quote:"We will easily prevail. Whatever it takes.",
+   venue:"Medal of Honor ceremony, White House",source:"Axios",
+   url:"https://www.axios.com/2026/03/30/trump-iran-war-end-deal",price:3.04},
+  {n:2,date:"2026-03-07",dateLabel:"March 7",type:"truth",typeLabel:"Truth Social",
+   quote:"We don't need people that join Wars after we've already won!",
+   venue:"Truth Social post",source:"Truth Social, via CNN",
+   url:"https://www.cnn.com/2026/03/25/politics/watch-how-trump-has-shifted-his-stance-over-three-weeks-on-almost-everything-iran",price:3.28},
+  {n:3,date:"2026-03-09",dateLabel:"March 9",type:"presser",typeLabel:"Press Conference",
+   quote:"Iran is all gone. We could call it a tremendous success right now.",
+   venue:"White House press conference",source:"Axios",
+   url:"https://www.axios.com/2026/03/30/trump-iran-war-end-deal",price:3.35},
+  {n:4,date:"2026-03-11",dateLabel:"March 11",type:"rally",typeLabel:"Rally",
+   quote:"We've won. You never like to say too early you won. We won. We won the bet \u2014 in the first hour, it was over.",
+   venue:"Rally in Hebron, Kentucky",source:"CNN",
+   url:"https://www.cnn.com/2026/03/25/politics/watch-how-trump-has-shifted-his-stance-over-three-weeks-on-almost-everything-iran",price:3.42},
+  {n:5,date:"2026-03-24",dateLabel:"March 24",type:"presser",typeLabel:"To Reporters",
+   quote:"We've won this war. This war has been won.",
+   venue:"Remarks to reporters",source:"NPR",
+   url:"https://www.npr.org/2026/03/24/nx-s1-5759000/iran-war-talks",price:3.85},
+  {n:6,date:"2026-04-07",dateLabel:"April 7",type:"truth",typeLabel:"Truth Social",
+   quote:"Subject to the Islamic Republic of Iran agreeing to the COMPLETE, IMMEDIATE, and SAFE OPENING of the Strait of Hormuz.",
+   venue:"Truth Social, ceasefire announcement",source:"Truth Social, via CBS News",
+   url:"https://www.cbsnews.com/live-updates/iran-war-trump-deadline-power-plants-human-chains-israel-train-strikes/",price:4.14},
+  {n:7,date:"2026-04-08",dateLabel:"April 8, 12:01 AM",type:"truth",typeLabel:"Truth Social",
+   quote:"A big day for World Peace! Iran wants it to happen, they've had enough! Big money will be made. This could be the Golden Age of the Middle East!!!",
+   venue:"Truth Social, 12:01 AM ET",source:"Truth Social, via CBS News",
+   url:"https://www.cbsnews.com/live-updates/iran-war-trump-deadline-power-plants-human-chains-israel-train-strikes/",price:4.14},
+  {n:8,date:"2026-04-08",dateLabel:"April 8",type:"interview",typeLabel:"Interview",
+   quote:"Total and complete victory. 100 percent. No question about it.",
+   venue:"AFP interview",source:"AFP, via CNN",
+   url:"https://www.cnn.com/2026/04/08/middleeast/us-iran-ceasefire-explainer-war-intl-hnk",price:4.14},
+  {n:9,date:"2026-04-16",dateLabel:"April 16",type:"interview",typeLabel:"Interview",
+   quote:"We've beaten them militarily, totally. I think it's close to over, I view it as very close to over. If I pulled up stakes right now it would take them 20 years to rebuild that country.",
+   venue:"Fox Business, prerecorded interview",source:"Fox Business, via CNBC",
+   url:"https://www.cnbc.com/2026/04/15/iran-war-trump-peace-deal-us-talks-stock-market-oil-prices-.html",price:4.05},
+];
+const svg=document.getElementById('chart');
+const W=1000,H=460,M={t:30,r:40,b:50,l:56};
+const iw=W-M.l-M.r,ih=H-M.t-M.b;
+const parseD=s=>new Date(s+"T00:00:00Z").getTime();
+const xs=prices.map(p=>parseD(p.d));
+const minX=Math.min(...xs),maxX=Math.max(...xs);
+const minY=2.80,maxY=4.30;
+const xScale=t=>M.l+(t-minX)/(maxX-minX)*iw;
+const yScale=v=>M.t+(1-(v-minY)/(maxY-minY))*ih;
+let s='';
+for(let v=2.80;v<=4.30+0.001;v+=0.20){const y=yScale(v);s+=`<line class="grid-line" x1="${M.l}" y1="${y}" x2="${W-M.r}" y2="${y}"/>`;s+=`<text class="axis-label" x="${M.l-10}" y="${y+4}" text-anchor="end">$${v.toFixed(2)}</text>`;}
+const wt=["2026-03-01","2026-03-08","2026-03-15","2026-03-22","2026-03-29","2026-04-05","2026-04-12","2026-04-19"];
+const tl=["Mar 1","Mar 8","Mar 15","Mar 22","Mar 29","Apr 5","Apr 12","Apr 19"];
+wt.forEach((d,i)=>{const x=xScale(parseD(d));s+=`<line class="grid-line" x1="${x}" y1="${M.t}" x2="${x}" y2="${H-M.b}"/>`;s+=`<text class="axis-label" x="${x}" y="${H-M.b+18}" text-anchor="middle">${tl[i]}</text>`;});
+s+=`<line class="axis-line" x1="${M.l}" y1="${M.t}" x2="${M.l}" y2="${H-M.b}"/>`;
+s+=`<line class="axis-line" x1="${M.l}" y1="${H-M.b}" x2="${W-M.r}" y2="${H-M.b}"/>`;
+const fourY=yScale(4.00);
+s+=`<line x1="${M.l}" y1="${fourY}" x2="${W-M.r}" y2="${fourY}" stroke="#8b1a1a" stroke-width="1" stroke-dasharray="4,4" stroke-opacity="0.4"/>`;
+s+=`<text x="${W-M.r-6}" y="${fourY-5}" text-anchor="end" style="font-family:'JetBrains Mono',monospace;font-size:9px;fill:#8b1a1a;text-transform:uppercase;letter-spacing:0.15em;font-weight:700">$4.00 / gal</text>`;
+const pwY=yScale(2.83);
+s+=`<line x1="${M.l}" y1="${pwY}" x2="${W-M.r}" y2="${pwY}" stroke="#2d4a3a" stroke-width="1" stroke-dasharray="4,4" stroke-opacity="0.35"/>`;
+s+=`<text x="${W-M.r-6}" y="${pwY+14}" text-anchor="end" style="font-family:'JetBrains Mono',monospace;font-size:9px;fill:#2d4a3a;text-transform:uppercase;letter-spacing:0.15em;font-weight:700">$2.83 pre-war (Jan 1)</text>`;
+let ap=`M ${xScale(xs[0])} ${H-M.b} `;prices.forEach(p=>{ap+=`L ${xScale(parseD(p.d))} ${yScale(p.p)} `;});ap+=`L ${xScale(xs[xs.length-1])} ${H-M.b} Z`;
+s+=`<path class="price-fill" d="${ap}"/>`;
+let lp='';prices.forEach((p,i)=>{lp+=`${i===0?'M':'L'} ${xScale(parseD(p.d))} ${yScale(p.p)} `;});
+s+=`<path class="price-line" d="${lp}"/>`;
+const dc={};declarations.forEach(d=>{dc[d.date]=(dc[d.date]||0)+1;});
+const di={};declarations.forEach(d=>{di[d.date]=(di[d.date]||0);const cnt=dc[d.date];const x=xScale(parseD(d.date));const y=yScale(d.price);let xo=x;if(cnt>1){xo=x+(di[d.date]-(cnt-1)/2)*20;}di[d.date]++;s+=`<g class="decl-group" data-n="${d.n}"><line x1="${xo}" y1="${y}" x2="${xo}" y2="${H-M.b}" stroke="#8b1a1a" stroke-width="1" stroke-dasharray="2,3" stroke-opacity="0.4"/><circle class="decl-point ${d.type}" cx="${xo}" cy="${y}" r="15" data-n="${d.n}"/><text class="decl-number" x="${xo}" y="${y}">${d.n}</text></g>`;});
+s+=`<text class="axis-label" x="${M.l}" y="${M.t-12}" style="font-size:11px;fill:#14110f;font-weight:700">U.S. NATIONAL AVG, USD / GALLON</text>`;
+s+=`<text class="axis-label" x="${W-M.r}" y="${M.t-12}" text-anchor="end" style="font-size:11px;fill:#8b1a1a;font-weight:700">\u25CF = VICTORY DECLARED</text>`;
+svg.innerHTML=s;
+const tooltip=document.getElementById('tooltip');
+document.querySelectorAll('.decl-point').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{const d=declarations.find(x=>x.n===parseInt(el.dataset.n));tooltip.innerHTML=`<div class="tt-date">${d.dateLabel}, 2026 \u00B7 ${d.typeLabel} \u00B7 \u2116${d.n}</div><div class="tt-quote">\u201C${d.quote}\u201D</div><div class="tt-price">${d.venue} \u00B7 Gas: $${d.price.toFixed(2)}/gal</div>`;tooltip.style.opacity='1';});
+  el.addEventListener('mousemove',(e)=>{let x=e.clientX+16,y=e.clientY+16;if(x+tooltip.offsetWidth>window.innerWidth-10)x=e.clientX-tooltip.offsetWidth-16;if(y+tooltip.offsetHeight>window.innerHeight-10)y=e.clientY-tooltip.offsetHeight-16;tooltip.style.left=x+'px';tooltip.style.top=y+'px';});
+  el.addEventListener('mouseleave',()=>{tooltip.style.opacity='0';});
+});
+const timeline=document.getElementById('timeline');
+const pw=2.83;
+timeline.innerHTML=declarations.map(d=>{const delta=((d.price-pw)/pw*100).toFixed(0);return `<div class="entry"><div class="entry-num">\u2116${d.n}</div><div><div class="entry-date"><span>${d.dateLabel}, 2026</span><span class="badge ${d.type}">${d.typeLabel}</span></div><div class="entry-quote">${d.quote}</div><div class="entry-meta">${d.venue} \u00B7 <a href="${d.url}" target="_blank" rel="noopener">${d.source}</a></div></div><div class="entry-price"><span class="num">$${d.price.toFixed(2)}</span><span class="lbl">Gas / gal \u00B7 \u25B2 ${delta}% since Jan 1</span></div></div>`;}).join('');
+</script>
+</body>
+</html>

@@ -93,7 +93,7 @@
   .axis-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; fill: var(--faded); text-transform: uppercase; letter-spacing: 0.1em; }
   .price-line { fill: none; stroke: var(--ink); stroke-width: 2; }
   .price-fill { fill: var(--ink); fill-opacity: 0.04; }
-  .decl-point { stroke: var(--cream); stroke-width: 3; cursor: pointer; }
+  .decl-point { stroke: var(--cream); stroke-width: 3; cursor: pointer; touch-action: manipulation; }
   .decl-point.truth { fill: var(--blood); }
   .decl-point.rally { fill: #c26a1e; }
   .decl-point.presser { fill: #2d4a3a; }
@@ -136,15 +136,66 @@
   #tooltip .tt-date { font-family: 'JetBrains Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--blood-bright); margin-bottom: 6px; }
   #tooltip .tt-quote { font-style: italic; line-height: 1.4; }
   #tooltip .tt-price { font-family: 'JetBrains Mono', monospace; font-size: 10px; margin-top: 8px; color: var(--cream); opacity: 0.7; }
+  /* Mobile tooltip as bottom sheet */
+  .mobile-card {
+    display: none;
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--ink); color: var(--cream);
+    padding: 20px 24px 28px; z-index: 200;
+    border-top: 3px solid var(--blood);
+    box-shadow: 0 -8px 32px rgba(20,17,15,0.3);
+    animation: slideUp 0.2s ease-out;
+  }
+  .mobile-card.active { display: block; }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .mobile-card .tt-date { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--blood-bright); margin-bottom: 8px; }
+  .mobile-card .tt-quote { font-family: 'Fraunces', serif; font-style: italic; font-size: 16px; line-height: 1.4; }
+  .mobile-card .tt-price { font-family: 'JetBrains Mono', monospace; font-size: 11px; margin-top: 10px; opacity: 0.7; }
+  .mobile-card .tt-close {
+    position: absolute; top: 12px; right: 16px;
+    background: none; border: 1px solid var(--cream); color: var(--cream);
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    padding: 4px 10px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.1em;
+  }
+  .mobile-overlay { display: none; position: fixed; inset: 0; z-index: 199; }
+  .mobile-overlay.active { display: block; }
+
   @media (max-width: 720px) {
-    .paper { padding: 24px 20px 56px; }
-    .counter-number { font-size: 140px; }
-    .entry { grid-template-columns: 52px 1fr; }
-    .entry-price { grid-column: 2; text-align: left; }
-    .entry-num { font-size: 40px; }
-    .entry-quote { font-size: 18px; }
-    .callout-row { gap: 32px; }
-    .callout .big { font-size: 36px; }
+    .paper { padding: 20px 16px 48px; }
+    .masthead { flex-wrap: wrap; gap: 4px; justify-content: center; font-size: 9px; letter-spacing: 0.1em; }
+    .masthead .edition { display: none; }
+    h1.title { margin: 32px 0 6px; }
+    .dek { font-size: 16px; margin-bottom: 32px; padding: 0 8px; }
+    .counter-block { margin: 36px 0 48px; padding: 28px 0 32px; }
+    .counter-number { font-size: 120px; }
+    .counter-sub { font-size: 18px; }
+    .callout-row { gap: 24px; padding-top: 16px; }
+    .callout .big { font-size: 32px; }
+    .callout { font-size: 9px; }
+    .section-head { margin-top: 40px; font-size: 10px; }
+    .section-head::before, .section-head::after { width: 30px; margin: 0 10px; }
+    .section-title { font-size: 28px; margin-bottom: 24px; }
+    .legend { gap: 16px; font-size: 9px; margin-bottom: 14px; }
+    .legend-swatch { width: 10px; height: 10px; }
+    .chart-wrap { padding: 16px 10px 14px; box-shadow: 2px 2px 0 var(--ink); }
+    .chart-caption { flex-direction: column; gap: 2px; font-size: 9px; margin-bottom: 10px; }
+    .entry { grid-template-columns: 44px 1fr; gap: 14px; padding: 20px 0; }
+    .entry-num { font-size: 36px; }
+    .entry-quote { font-size: 17px; }
+    .entry-date { font-size: 9px; gap: 6px; }
+    .entry-meta { font-size: 9px; }
+    .entry-price { grid-column: 1 / -1; text-align: left; display: flex; align-items: baseline; gap: 8px; }
+    .entry-price .num { font-size: 22px; }
+    .entry-price .lbl { font-size: 8px; }
+    .colophon { flex-direction: column; font-size: 9px; }
+    #tooltip { display: none !important; }
+    .decl-point { r: 20; stroke-width: 2; }
+    .decl-number { font-size: 12px; }
+  }
+  @media (max-width: 380px) {
+    .counter-number { font-size: 90px; }
+    .callout-row { flex-direction: column; gap: 16px; }
+    h1.title { font-size: 48px; }
   }
 </style>
 </head>
@@ -190,6 +241,13 @@
     <p>Heavily inspired by <a href="https://bitcoindeaths.com/" target="_blank" rel="noopener">bitcoindeaths.com</a></p>
   </div>
 </main>
+<div class="mobile-overlay" id="mobileOverlay"></div>
+<div class="mobile-card" id="mobileCard">
+  <button class="tt-close" id="mobileClose">&times; Close</button>
+  <div class="tt-date" id="mcDate"></div>
+  <div class="tt-quote" id="mcQuote"></div>
+  <div class="tt-price" id="mcPrice"></div>
+</div>
 <div id="tooltip"></div>
 <script>
 const prices = [
@@ -273,10 +331,42 @@ s+=`<text class="axis-label" x="${M.l}" y="${M.t-12}" style="font-size:11px;fill
 s+=`<text class="axis-label" x="${W-M.r}" y="${M.t-12}" text-anchor="end" style="font-size:11px;fill:#8b1a1a;font-weight:700">\u25CF = VICTORY DECLARED</text>`;
 svg.innerHTML=s;
 const tooltip=document.getElementById('tooltip');
+const mobileCard=document.getElementById('mobileCard');
+const mobileOverlay=document.getElementById('mobileOverlay');
+const mcDate=document.getElementById('mcDate');
+const mcQuote=document.getElementById('mcQuote');
+const mcPrice=document.getElementById('mcPrice');
+const isMobile=()=>window.innerWidth<=720;
+
+function closeMobileCard(){mobileCard.classList.remove('active');mobileOverlay.classList.remove('active');}
+document.getElementById('mobileClose').addEventListener('click',closeMobileCard);
+mobileOverlay.addEventListener('click',closeMobileCard);
+
 document.querySelectorAll('.decl-point').forEach(el=>{
-  el.addEventListener('mouseenter',()=>{const d=declarations.find(x=>x.n===parseInt(el.dataset.n));tooltip.innerHTML=`<div class="tt-date">${d.dateLabel}, 2026 \u00B7 ${d.typeLabel} \u00B7 \u2116${d.n}</div><div class="tt-quote">\u201C${d.quote}\u201D</div><div class="tt-price">${d.venue} \u00B7 Gas: $${d.price.toFixed(2)}/gal</div>`;tooltip.style.opacity='1';});
-  el.addEventListener('mousemove',(e)=>{let x=e.clientX+16,y=e.clientY+16;if(x+tooltip.offsetWidth>window.innerWidth-10)x=e.clientX-tooltip.offsetWidth-16;if(y+tooltip.offsetHeight>window.innerHeight-10)y=e.clientY-tooltip.offsetHeight-16;tooltip.style.left=x+'px';tooltip.style.top=y+'px';});
+  el.addEventListener('mouseenter',()=>{
+    if(isMobile())return;
+    const d=declarations.find(x=>x.n===parseInt(el.dataset.n));
+    tooltip.innerHTML=`<div class="tt-date">${d.dateLabel}, 2026 \u00B7 ${d.typeLabel} \u00B7 \u2116${d.n}</div><div class="tt-quote">\u201C${d.quote}\u201D</div><div class="tt-price">${d.venue} \u00B7 Gas: $${d.price.toFixed(2)}/gal</div>`;
+    tooltip.style.opacity='1';
+  });
+  el.addEventListener('mousemove',(e)=>{
+    if(isMobile())return;
+    let x=e.clientX+16,y=e.clientY+16;
+    if(x+tooltip.offsetWidth>window.innerWidth-10)x=e.clientX-tooltip.offsetWidth-16;
+    if(y+tooltip.offsetHeight>window.innerHeight-10)y=e.clientY-tooltip.offsetHeight-16;
+    tooltip.style.left=x+'px';tooltip.style.top=y+'px';
+  });
   el.addEventListener('mouseleave',()=>{tooltip.style.opacity='0';});
+  el.addEventListener('click',(e)=>{
+    if(!isMobile())return;
+    e.preventDefault();e.stopPropagation();
+    const d=declarations.find(x=>x.n===parseInt(el.dataset.n));
+    mcDate.textContent=`${d.dateLabel}, 2026 \u00B7 ${d.typeLabel} \u00B7 \u2116${d.n}`;
+    mcQuote.textContent=`\u201C${d.quote}\u201D`;
+    mcPrice.textContent=`${d.venue} \u00B7 Gas: $${d.price.toFixed(2)}/gal`;
+    mobileOverlay.classList.add('active');
+    mobileCard.classList.add('active');
+  });
 });
 const timeline=document.getElementById('timeline');
 const pw=2.83;
